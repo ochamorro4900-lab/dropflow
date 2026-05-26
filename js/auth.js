@@ -3,9 +3,7 @@
 //  Manejo de login, registro y sesión con Supabase Auth
 // ============================================================
 
-// ---- Utilidades UI ----
-
-function setLoading(btnId, loaderId, state) {
+function setLoading(btnId, state) {
   const btn  = document.getElementById(btnId);
   const text = btn.querySelector('.btn-text');
   const spin = btn.querySelector('.btn-loader');
@@ -42,11 +40,7 @@ function togglePassword(inputId, btn) {
 (async function checkSession() {
   try {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session && window.location.pathname.includes('index.html') || 
-        session && window.location.pathname === '/' ||
-        session && window.location.pathname.endsWith('/')) {
-      window.location.replace('dashboard.html');
-    }
+    if (session) window.location.replace('dashboard.html');
   } catch (e) {
     console.warn('Session check error:', e.message);
   }
@@ -56,28 +50,22 @@ function togglePassword(inputId, btn) {
 async function handleLogin(e) {
   e.preventDefault();
   hideError('loginError');
-  setLoading('loginBtn', 'loginLoader', true);
+  setLoading('loginBtn', true);
 
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
 
   try {
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
     if (error) throw error;
-
-    // Guardar info básica en sessionStorage para el dashboard
-    sessionStorage.setItem('df_user_id',    data.user.id);
-    sessionStorage.setItem('df_user_email', data.user.email);
-
     window.location.replace('dashboard.html');
 
   } catch (err) {
     let msg = 'Error al iniciar sesión.';
-    if (err.message.includes('Invalid login'))  msg = 'Correo o contraseña incorrectos.';
+    if (err.message.includes('Invalid login'))       msg = 'Correo o contraseña incorrectos.';
     if (err.message.includes('Email not confirmed')) msg = 'Debes confirmar tu correo antes de iniciar sesión.';
     showError('loginError', msg);
-    setLoading('loginBtn', 'loginLoader', false);
+    setLoading('loginBtn', false);
   }
 }
 
@@ -85,7 +73,7 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
   hideError('registerError');
-  setLoading('registerBtn', 'registerLoader', true);
+  setLoading('registerBtn', true);
 
   const name     = document.getElementById('regName').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
@@ -93,33 +81,32 @@ async function handleRegister(e) {
   const role     = document.getElementById('regRole').value;
 
   try {
-    // 1. Crear usuario en Supabase Auth
     const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name, role }
-      }
+      email, password,
+      options: { data: { full_name: name, role } }
     });
 
     if (error) throw error;
 
-    // 2. Insertar perfil en tabla profiles
+    // Insertar perfil
     if (data.user) {
       await supabaseClient.from('profiles').upsert({
-        id:        data.user.id,
-        full_name: name,
-        email,
-        role
+        id: data.user.id, full_name: name, email, role
       });
     }
 
     // Mostrar mensaje de éxito
-    showError('registerError', '✓ Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.');
-    document.getElementById('registerError').style.background = 'rgba(0,229,160,0.1)';
-    document.getElementById('registerError').style.borderColor = 'rgba(0,229,160,0.3)';
-    document.getElementById('registerError').style.color = 'var(--accent)';
+    const errEl = document.getElementById('registerError');
+    errEl.textContent    = '✓ Cuenta creada exitosamente. Redirigiendo al login...';
+    errEl.style.background   = 'rgba(0,229,160,0.1)';
+    errEl.style.borderColor  = 'rgba(0,229,160,0.3)';
+    errEl.style.color        = 'var(--accent)';
+    errEl.classList.remove('hidden');
+
     document.getElementById('registerForm').reset();
+
+    // Redirigir al login después de 2 segundos
+    setTimeout(() => switchCard('login'), 2000);
 
   } catch (err) {
     let msg = 'Error al crear la cuenta.';
@@ -127,6 +114,6 @@ async function handleRegister(e) {
     if (err.message.includes('password'))           msg = 'La contraseña debe tener al menos 6 caracteres.';
     showError('registerError', msg);
   } finally {
-    setLoading('registerBtn', 'registerLoader', false);
+    setLoading('registerBtn', false);
   }
 }
