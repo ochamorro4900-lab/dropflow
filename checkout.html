@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finalizar pedido — DropFlow</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/checkout.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="checkout-page">
+
+<header class="checkout-header">
+  <a href="dashboard.html" class="checkout-back">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    Volver
+  </a>
+  <div class="auth-brand">
+    <div class="brand-mark">
+      <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+        <path d="M18 3L33 12V24L18 33L3 24V12L18 3Z" fill="var(--accent)" opacity="0.15"/>
+        <path d="M18 3L33 12V24L18 33L3 24V12L18 3Z" stroke="var(--accent)" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="3" fill="var(--accent)"/>
+      </svg>
+    </div>
+    <span class="brand-name">DropFlow</span>
+  </div>
+  <div style="width:80px"></div>
+</header>
+
+<div class="checkout-container">
+
+  <!-- COLUMNA IZQUIERDA -->
+  <div class="checkout-left">
+
+    <!-- CONTACTO -->
+    <div class="checkout-section">
+      <h2 class="section-title">Contacto</h2>
+      <div class="field-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="contactEmail" placeholder="tu@correo.com"/>
+      </div>
+    </div>
+
+    <!-- DATOS DEL DOCUMENTO -->
+    <div class="checkout-section">
+      <h2 class="section-title">Datos del documento</h2>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Tipo de documento</label>
+          <select id="docType">
+            <option value="cc">Cédula de ciudadanía</option>
+            <option value="nit">NIT</option>
+            <option value="pasaporte">Pasaporte</option>
+            <option value="ce">Cédula extranjera</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Número de documento</label>
+          <input type="text" id="docNumber" placeholder="123456789"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATOS DE ENTREGA -->
+    <div class="checkout-section">
+      <h2 class="section-title">Entrega — Datos de entrega</h2>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Departamento</label>
+          <select id="deptSelect" onchange="updateCities()">
+            <option value="">Selecciona departamento</option>
+            <option value="antioquia">Antioquia</option>
+            <option value="atlantico">Atlántico</option>
+            <option value="bolivar">Bolívar</option>
+            <option value="boyaca">Boyacá</option>
+            <option value="caldas">Caldas</option>
+            <option value="cauca">Cauca</option>
+            <option value="cordoba">Córdoba</option>
+            <option value="cundinamarca">Cundinamarca</option>
+            <option value="huila">Huila</option>
+            <option value="magdalena">Magdalena</option>
+            <option value="meta">Meta</option>
+            <option value="narino">Nariño</option>
+            <option value="norte_santander">Norte de Santander</option>
+            <option value="risaralda">Risaralda</option>
+            <option value="santander">Santander</option>
+            <option value="tolima">Tolima</option>
+            <option value="valle">Valle del Cauca</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Ciudad</label>
+          <select id="citySelect">
+            <option value="">Primero selecciona departamento</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Nombres</label>
+          <input type="text" id="firstName" placeholder="Oscar"/>
+        </div>
+        <div class="field-group">
+          <label>Apellidos</label>
+          <input type="text" id="lastName" placeholder="Chamorro"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Dirección</label>
+        <input type="text" id="address" placeholder="Calle 123 # 45-67"/>
+      </div>
+      <div class="field-group">
+        <label>Casa, apartamento, etc. <span class="optional-label">(opcional)</span></label>
+        <input type="text" id="address2" placeholder="Apto 301, Torre B"/>
+      </div>
+      <div class="field-group">
+        <label>Teléfono</label>
+        <input type="tel" id="phone" placeholder="+57 300 000 0000"/>
+      </div>
+      <div class="save-info-check">
+        <label class="check-label">
+          <input type="checkbox" id="saveInfo"/>
+          <span>Guardar mi información y consultar más rápidamente la próxima vez</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- AVISO IMPORTANTE -->
+    <div class="important-box">
+      <div class="important-icon">!</div>
+      <p><strong>Antes de finalizar tu pedido,</strong> verifica la ciudad y el departamento de tu dirección.<br/>
+      Esto nos ayuda a cumplir los tiempos de entrega y asegurar que tu pedido llegue correctamente.</p>
+    </div>
+
+    <!-- MÉTODO DE ENVÍO -->
+    <div class="checkout-section">
+      <h2 class="section-title">Método de envío</h2>
+      <div class="shipping-option selected">
+        <div class="shipping-radio"></div>
+        <div>
+          <div class="shipping-name">Envío nacional</div>
+          <div class="shipping-desc">3-5 días hábiles</div>
+        </div>
+        <div class="shipping-price">$15.000</div>
+      </div>
+    </div>
+
+    <!-- PAGO -->
+    <div class="checkout-section">
+      <h2 class="section-title">Pago</h2>
+      <p class="secure-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Todas las transacciones son seguras y están encriptadas.
+      </p>
+
+      <!-- Tabs de pago -->
+      <div class="payment-tabs">
+        <button class="pay-tab active" onclick="switchPayTab('card',this)">💳 Débito o Crédito</button>
+        <button class="pay-tab" onclick="switchPayTab('pse',this)">🏦 PSE</button>
+        <button class="pay-tab" onclick="switchPayTab('efecty',this)">💵 Efecty</button>
+        <button class="pay-tab" onclick="switchPayTab('addi',this)">⚡ Addi</button>
+        <button class="pay-tab" onclick="switchPayTab('siste',this)">📱 Sistecredito</button>
+      </div>
+
+      <!-- Pago con tarjeta -->
+      <div class="pay-panel" id="panel-card">
+        <div class="card-icons">
+          <span class="card-icon visa">VISA</span>
+          <span class="card-icon mc">MC</span>
+          <span class="card-icon amex">AMEX</span>
+          <span class="card-icon other">+</span>
+        </div>
+        <div class="field-group">
+          <label>Número de tarjeta</label>
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"/>
+        </div>
+        <div class="form-row">
+          <div class="field-group">
+            <label>Fecha de vencimiento (MM/AA)</label>
+            <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5" oninput="formatExpiry(this)"/>
+          </div>
+          <div class="field-group">
+            <label>Código de seguridad</label>
+            <input type="text" id="cardCvv" placeholder="CVV" maxlength="4"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Nombre del titular</label>
+          <input type="text" id="cardName" placeholder="Como aparece en la tarjeta"/>
+        </div>
+        <div class="form-row">
+          <div class="field-group">
+            <label>Tipo de documento del titular</label>
+            <select id="cardDocType">
+              <option value="cc">C.C.</option>
+              <option value="ce">C.E.</option>
+              <option value="nit">NIT</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Número de documento</label>
+            <input type="text" id="cardDocNum" placeholder="123456789"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Cuotas</label>
+          <select id="cardCuotas">
+            <option value="1">1 cuota (contado)</option>
+            <option value="3">3 cuotas</option>
+            <option value="6">6 cuotas</option>
+            <option value="12">12 cuotas</option>
+            <option value="24">24 cuotas</option>
+          </select>
+          <span class="field-hint">Si hay intereses, los aplicará y cobrará tu banco.</span>
+        </div>
+        <div class="billing-check">
+          <label class="check-label">
+            <input type="checkbox" id="sameAddress" checked/>
+            <span>Usar la dirección de envío como dirección de facturación</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- PSE -->
+      <div class="pay-panel hidden" id="panel-pse">
+        <div class="pay-info-box">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Pago con PSE</div>
+            <div style="font-size:0.82rem;color:var(--text-2)">Serás redirigido a tu banco para completar el pago de forma segura.</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Banco</label>
+          <select id="pseBank">
+            <option value="">Selecciona tu banco</option>
+            <option>Bancolombia</option>
+            <option>Banco de Bogotá</option>
+            <option>Davivienda</option>
+            <option>BBVA Colombia</option>
+            <option>Banco Popular</option>
+            <option>Nequi</option>
+            <option>Daviplata</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Efecty -->
+      <div class="pay-panel hidden" id="panel-efecty">
+        <div class="pay-info-box">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Pago con Efecty</div>
+            <div style="font-size:0.82rem;color:var(--text-2)">Recibirás un código para pagar en cualquier punto Efecty del país. Tienes 48 horas para realizar el pago.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Addi -->
+      <div class="pay-panel hidden" id="panel-addi">
+        <div class="pay-info-box">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Paga a crédito con Addi</div>
+            <div style="font-size:0.82rem;color:var(--text-2)">Compra ahora y paga en cuotas sin tarjeta de crédito. Aprobación en segundos.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sistecredito -->
+      <div class="pay-panel hidden" id="panel-siste">
+        <div class="pay-info-box">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Sistecredito</div>
+            <div style="font-size:0.82rem;color:var(--text-2)">Paga con tu cupo Sistecredito en cómodas cuotas mensuales.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER LINKS -->
+    <div class="checkout-footer-links">
+      <a href="#">Política de reembolso</a>
+      <a href="#">Política de envío</a>
+      <a href="#">Política de privacidad</a>
+      <a href="#">Términos del servicio</a>
+      <a href="#">Contacto</a>
+      <a href="#">Cookies</a>
+    </div>
+    <div class="checkout-legal">
+      <strong>Nota:</strong> De acuerdo con lo previsto en nuestros Términos y Condiciones que el Cliente declara conocer y aceptar, al hacer clic en el botón 'Pagar Ahora' se realizará el pago del pedido con los productos seleccionados. Una vez confirmado el pago del pedido se reconfirmará la disponibilidad de inventario de los productos seleccionados y se informará al Cliente dentro de los 3 días hábiles siguientes sobre la confirmación de su pedido y envío. En caso de cancelación, se reembolsará el dinero pagado o se generará un saldo a favor, a elección del Cliente.
+    </div>
+  </div>
+
+  <!-- COLUMNA DERECHA: RESUMEN -->
+  <div class="checkout-right">
+    <div class="order-summary">
+      <h2 class="section-title">Resumen del pedido</h2>
+      <div class="order-items" id="orderItems"></div>
+
+      <!-- Código promocional -->
+      <div class="promo-section">
+        <div class="promo-row">
+          <input type="text" id="promoCode" placeholder="Código de descuento" style="border-radius:6px 0 0 6px;border-right:none"/>
+          <button class="promo-btn" onclick="applyPromo()">Aplicar</button>
+        </div>
+        <div id="promoMsg" class="promo-msg hidden"></div>
+      </div>
+
+      <div class="summary-lines">
+        <div class="summary-line">
+          <span id="summaryItemsLabel">Artículos (0)</span>
+          <span id="summarySubtotal">$0</span>
+        </div>
+        <div class="summary-line" id="discountLine" style="display:none;color:var(--accent)">
+          <span>Descuento (50%)</span>
+          <span id="summaryDiscount">-$0</span>
+        </div>
+        <div class="summary-line">
+          <span>Envío nacional</span>
+          <span>$15.000</span>
+        </div>
+        <div class="summary-line summary-total">
+          <span>Total</span>
+          <span id="summaryTotal">$15.000</span>
+        </div>
+      </div>
+
+      <button class="btn-primary pay-btn" onclick="simulatePayment()">
+        Pagar ahora
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CONFIRMACIÓN -->
+<div class="modal-overlay hidden" id="successModal">
+  <div class="modal success-modal">
+    <div class="success-icon">✓</div>
+    <h2>¡Pedido confirmado!</h2>
+    <p>Tu pedido ha sido recibido. Recibirás confirmación dentro de los próximos <strong>3 días hábiles</strong>.</p>
+    <div class="order-flow-mini">
+      <div class="mini-step done">📦 Confirmado</div>
+      <div class="mini-arrow">→</div>
+      <div class="mini-step active">🔄 Procesando</div>
+      <div class="mini-arrow">→</div>
+      <div class="mini-step">🚚 En camino</div>
+      <div class="mini-arrow">→</div>
+      <div class="mini-step">✅ Entregado</div>
+    </div>
+    <button class="btn-primary" style="width:100%;justify-content:center;margin-top:20px" onclick="window.location.replace('dashboard.html')">
+      Volver al dashboard
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

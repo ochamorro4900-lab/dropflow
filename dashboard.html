@@ -216,27 +216,76 @@
     <section class="page" id="page-products">
       <div class="page-toolbar">
         <input type="text" class="search-input" id="productSearch" placeholder="Buscar producto..." oninput="filterProducts()" />
-        <button class="btn-primary" onclick="openModal('productModal')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nuevo producto
-        </button>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="cart-topbar-btn" onclick="toggleCart()" id="cartToggleBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            Carrito <span class="cart-count" id="cartCount">0</span>
+          </button>
+          <button class="btn-primary" onclick="openModal('productModal')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo producto
+          </button>
+        </div>
       </div>
-      <div class="table-card">
-        <table class="data-table" id="productsTable">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Proveedor</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="productsBody">
-            <tr><td colspan="6" class="table-empty">Cargando productos...</td></tr>
-          </tbody>
-        </table>
+
+      <div class="products-layout" id="productsLayout">
+        <!-- Tabla de productos -->
+        <div class="table-card" id="productsTableWrap">
+          <table class="data-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Proveedor</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Carrito</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody">
+              <tr><td colspan="7" class="table-empty">Cargando productos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Panel del carrito -->
+        <div class="cart-panel hidden" id="cartPanel">
+          <div class="cart-header">
+            <h3>🛒 Carrito</h3>
+            <button onclick="toggleCart()" class="modal-close">×</button>
+          </div>
+          <div class="cart-items" id="cartItems">
+            <div class="table-empty">El carrito está vacío</div>
+          </div>
+          <div class="cart-footer">
+            <div class="cart-subtotal">
+              <span>Subtotal</span>
+              <span id="cartSubtotal">$0</span>
+            </div>
+            <div class="cart-subtotal" style="font-size:0.75rem;color:var(--text-3)">
+              <span>Envío nacional</span>
+              <span>$15.000</span>
+            </div>
+            <div class="cart-subtotal" style="font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+              <span>Total</span>
+              <span id="cartTotal">$15.000</span>
+            </div>
+            <div class="cart-terms">
+              <label class="check-label">
+                <input type="checkbox" id="cartTerms"/>
+                <span>Acepto los <a href="#" style="color:var(--accent)">términos y condiciones</a></span>
+              </label>
+            </div>
+            <div class="field-group" style="margin-top:8px">
+              <label style="font-size:0.75rem;color:var(--text-3)">Notas al pedido (opcional)</label>
+              <textarea id="cartNotes" rows="2" placeholder="Instrucciones especiales..."></textarea>
+            </div>
+            <button class="btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="proceedCheckout()">
+              Finalizar pedido →
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -244,7 +293,7 @@
     <section class="page" id="page-suppliers">
       <div class="page-toolbar">
         <input type="text" class="search-input" id="supplierSearch" placeholder="Buscar proveedor..." oninput="filterSuppliers()"/>
-        <button class="btn-primary" id="btnNewSupplier" onclick="openModal('supplierModal')">
+        <button class="btn-primary" onclick="openModal('supplierModal')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nuevo proveedor
         </button>
@@ -421,7 +470,11 @@
           <div class="form-row">
             <div class="field-group">
               <label>Cantidad</label>
-              <input type="number" id="ordQty" placeholder="1" required min="1" value="1" oninput="calcOrderTotal()"/>
+              <div class="qty-wrapper">
+                <button type="button" class="qty-btn" onmousedown="startQtyHold(-1)" onmouseup="stopQtyHold()" onmouseleave="stopQtyHold()" ontouchstart="startQtyHold(-1)" ontouchend="stopQtyHold()">−</button>
+                <input type="number" id="ordQty" placeholder="1" required min="1" value="1" oninput="calcOrderTotal()" style="text-align:center"/>
+                <button type="button" class="qty-btn" onmousedown="startQtyHold(1)" onmouseup="stopQtyHold()" onmouseleave="stopQtyHold()" ontouchstart="startQtyHold(1)" ontouchend="stopQtyHold()">+</button>
+              </div>
             </div>
             <div class="field-group">
               <label>Total (COP)</label>
