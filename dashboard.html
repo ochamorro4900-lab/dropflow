@@ -210,6 +210,26 @@
         </div>
       </div>
 
+      <!-- PRODUCTOS DESTACADOS -->
+      <div class="featured-section">
+        <div class="chart-header">
+          <div>
+            <h3>🛍️ Productos destacados</h3>
+            <p class="chart-sub">Nuevos · Más vendidos · Ofertas — añade al carrito desde aquí</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm featured-filter active" onclick="filterFeatured('all',this)">Todos</button>
+            <button class="btn-sm featured-filter" onclick="filterFeatured('nuevo',this)">🆕 Nuevos</button>
+            <button class="btn-sm featured-filter" onclick="filterFeatured('mas_vendido',this)">🔥 Más vendidos</button>
+            <button class="btn-sm featured-filter" onclick="filterFeatured('destacado',this)">⭐ Destacados</button>
+            <button class="btn-sm featured-filter" onclick="filterFeatured('oferta',this)">🏷️ Ofertas</button>
+          </div>
+        </div>
+        <div class="featured-grid" id="featuredGrid">
+          <div class="table-empty">Cargando productos...</div>
+        </div>
+      </div>
+
     </section>
 
     <!-- ===== PRODUCTS PAGE ===== -->

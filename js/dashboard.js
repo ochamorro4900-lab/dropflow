@@ -177,3 +177,198 @@ function showToast(msg, type='success') {
   t.className = 'toast show toast-'+type;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ============================================================
+//  PRODUCTOS DESTACADOS
+// ============================================================
+
+let allFeaturedProducts = [];
+
+async function loadFeaturedProducts() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('products')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+      .limit(60);
+
+    if (error) throw error;
+    allFeaturedProducts = data || [];
+    renderFeatured(allFeaturedProducts);
+  } catch(err) {
+    console.warn('Featured error:', err.message);
+  }
+}
+
+function renderFeatured(products) {
+  const grid = document.getElementById('featuredGrid');
+  if (!products.length) {
+    grid.innerHTML = '<div class="table-empty">No hay productos disponibles.</div>';
+    return;
+  }
+
+  const tagLabels = { nuevo:'🆕 Nuevo', destacado:'⭐ Destacado', mas_vendido:'🔥 Más vendido', oferta:'🏷️ Oferta' };
+
+  grid.innerHTML = products.map(p => {
+    const discount    = p.discount_pct || 0;
+    const priceOrig   = p.price || 0;
+    const priceDisc   = discount > 0 ? Math.round(priceOrig * (1 - discount/100)) : priceOrig;
+    const tagLabel    = tagLabels[p.tag] || '';
+    const imgEl       = p.image_url
+      ? `<img class="product-card-img" src="${escHtml(p.image_url)}" alt="${escHtml(p.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : '';
+    const placeholder = `<div class="product-card-img-placeholder" ${p.image_url?'style="display:none"':''}>📦</div>`;
+
+    return `
+    <div class="product-card" data-tag="${p.tag||''}">
+      ${imgEl}${placeholder}
+      <div class="product-card-body">
+        ${tagLabel ? `<span class="product-card-tag tag-${p.tag}">${tagLabel}</span>` : ''}
+        <div class="product-card-name">${escHtml(p.name)}</div>
+        <div class="product-card-desc">${escHtml(p.description||'')}</div>
+        <div class="product-card-prices">
+          <span class="product-card-price">$${formatNum(priceDisc)}</span>
+          ${discount > 0 ? `<span class="product-card-original">$${formatNum(priceOrig)}</span>
+          <span class="product-card-discount">-${discount}%</span>` : ''}
+        </div>
+      </div>
+      <div class="product-card-footer">
+        <button class="btn-sm" onclick="addToCartFromDashboard('${p.id}')">
+          🛒 Añadir al carrito
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterFeatured(tag, btn) {
+  document.querySelectorAll('.featured-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tag === 'all') {
+    renderFeatured(allFeaturedProducts);
+  } else {
+    renderFeatured(allFeaturedProducts.filter(p => p.tag === tag));
+  }
+}
+
+function addToCartFromDashboard(productId) {
+  // Navegar a productos y añadir al carrito
+  navigateTo('products');
+  setTimeout(() => {
+    if (typeof addToCart === 'function') {
+      addToCart(productId);
+    }
+  }, 300);
+}
+
+// ============================================================
+//  FLUJO DE PEDIDO CON ÓRDENES REALES
+// ============================================================
+
+let realOrderFlow = [];
+let flowIndex     = 0;
+let realFlowRunning = false;
+
+async function loadRealOrderFlow() {
+  try {
+    const { data } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('status', 'pendiente')
+      .limit(10);
+
+    realOrderFlow = data || [];
+    if (realOrderFlow.length > 0) {
+      setTimeout(() => simulateRealOrderFlow(), 1500);
+    } else {
+      // Si no hay pendientes, usar simulación normal
+      setTimeout(() => window.simulateOrderFlow(), 1500);
+    }
+  } catch(e) {
+    setTimeout(() => window.simulateOrderFlow(), 1500);
+  }
+}
+
+async function simulateRealOrderFlow() {
+  if (realFlowRunning || realOrderFlow.length === 0) {
+    window.simulateOrderFlow();
+    return;
+  }
+
+  realFlowRunning = true;
+  const order = realOrderFlow[flowIndex % realOrderFlow.length];
+  flowIndex++;
+
+  // Reset visual
+  [0,1,2,3].forEach(i => document.getElementById('flow-'+i).classList.remove('active','done'));
+  [0,1,2].forEach(i => document.getElementById('arrow-'+i).classList.remove('filled'));
+  document.getElementById('flowProgress').style.width   = '0%';
+
+  const steps = [
+    { label: `Pedido de ${order.customer_name || 'Cliente'}: ${order.product_name || 'Producto'}`, progress:'12%' },
+    { label: 'DropFlow procesando la orden...', progress:'37%' },
+    { label: 'Proveedor confirmó el stock ✓',   progress:'62%' },
+    { label: '¡Pedido enviado al cliente! 🚚',  progress:'100%' },
+  ];
+
+  let step = 0;
+
+  async function advance() {
+    if (step > 0) {
+      document.getElementById('flow-'+(step-1)).classList.remove('active');
+      document.getElementById('flow-'+(step-1)).classList.add('done');
+      if (step-1 < 3) document.getElementById('arrow-'+(step-1)).classList.add('filled');
+    }
+    if (step < steps.length) {
+      document.getElementById('flow-'+step).classList.add('active');
+      document.getElementById('flowProgress').style.width  = steps[step].progress;
+      document.getElementById('flowStatusText').textContent = steps[step].label;
+      step++;
+      setTimeout(advance, 1400);
+    } else {
+      // Actualizar estado a 'entregado' en Supabase
+      try {
+        await supabaseClient.from('orders').update({ status: 'entregado' }).eq('id', order.id);
+        showToast(`Pedido de ${order.customer_name || 'Cliente'} marcado como entregado ✓`);
+        await loadKPIs();
+        // Recargar pendientes
+        const { data } = await supabaseClient.from('orders').select('*').eq('status','pendiente').limit(10);
+        realOrderFlow = data || [];
+      } catch(e) {}
+
+      realFlowRunning = false;
+      setTimeout(() => {
+        [0,1,2,3].forEach(i => document.getElementById('flow-'+i).classList.remove('active','done'));
+        [0,1,2].forEach(i => document.getElementById('arrow-'+i).classList.remove('filled'));
+        document.getElementById('flowProgress').style.width   = '0%';
+        document.getElementById('flowStatusText').textContent = 'Esperando pedido...';
+      }, 2500);
+
+      // Siguiente ciclo en 12s
+      setTimeout(() => simulateRealOrderFlow(), 12000);
+    }
+  }
+
+  advance();
+}
+
+// Override del botón simular para usar pedidos reales
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('[onclick="simulateOrderFlow()"]');
+  if (btn) btn.setAttribute('onclick', 'triggerManualFlow()');
+});
+
+function triggerManualFlow() {
+  if (realOrderFlow.length > 0) {
+    simulateRealOrderFlow();
+  } else {
+    window.simulateOrderFlow();
+  }
+}
+
+// Cargar todo al inicio
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadFeaturedProducts, 500);
+  setTimeout(loadRealOrderFlow, 800);
+});
