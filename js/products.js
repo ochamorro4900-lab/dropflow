@@ -95,15 +95,17 @@ function renderCart() {
     <div class="cart-item">
       <div class="cart-item-info">
         <span class="cart-item-name">${escHtml(item.name)}</span>
-        <span class="cart-item-price">$${formatNum(item.price)}</span>
+        <span class="cart-item-price">$${formatNum(item.price)} c/u</span>
       </div>
-      <div class="cart-item-controls">
-        <button class="qty-btn-sm" onclick="updateCartQty('${item.id}',-1)">−</button>
-        <span class="cart-item-qty">${item.qty}</span>
-        <button class="qty-btn-sm" onclick="updateCartQty('${item.id}',1)">+</button>
-        <button class="qty-btn-sm" style="color:var(--red)" onclick="removeFromCart('${item.id}')">✕</button>
+      <div class="cart-item-row">
+        <div class="cart-item-controls">
+          <button class="qty-btn-sm" onclick="updateCartQty('${item.id}',-1)">−</button>
+          <span class="cart-item-qty">${item.qty}</span>
+          <button class="qty-btn-sm" onclick="updateCartQty('${item.id}',1)">+</button>
+          <button class="qty-btn-sm" style="color:var(--red);margin-left:4px" onclick="removeFromCart('${item.id}')">✕</button>
+        </div>
+        <span class="cart-item-total">$${formatNum(item.price * item.qty)}</span>
       </div>
-      <span class="cart-item-total">$${formatNum(item.price * item.qty)}</span>
     </div>`).join('');
 
   const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
@@ -115,8 +117,16 @@ function renderCart() {
 function toggleCart() {
   const panel  = document.getElementById('cartPanel');
   const layout = document.getElementById('productsLayout');
-  panel.classList.toggle('hidden');
-  layout.classList.toggle('cart-open');
+  const isHidden = panel.classList.contains('hidden');
+  if (isHidden) {
+    panel.classList.remove('hidden');
+    panel.style.display = 'flex';
+    layout.classList.add('cart-open');
+  } else {
+    panel.classList.add('hidden');
+    panel.style.display = 'none';
+    layout.classList.remove('cart-open');
+  }
 }
 
 function proceedCheckout() {
